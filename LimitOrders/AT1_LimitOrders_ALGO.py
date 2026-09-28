@@ -15,7 +15,7 @@ MAX_ORDER_SIZE = 10000
 
 # Limit price offset from the current best bid
 # 0.00 is fully passive, while larger values are more aggressive
-OFFSET = 0.00
+OFFSET = 0.02
 
 # Tick at which remaining shares are purchased using market orders
 FINAL_SWEEP_TICK = 299
