@@ -62,18 +62,18 @@ def main():
             while case['status'] == 'ACTIVE' and not common.shutdown:
 
                 # Submit the scheduled purchase for the current tick
-                if tick in purchase_schedule:
-                    shares = purchase_schedule.pop(tick)
+                for scheduled_tick in sorted(t for t in purchase_schedule if t <= tick):
+                    shares = purchase_schedule.pop(scheduled_tick)
                     remaining = shares
                     while remaining > 0:
                         chunk = min(MAX_ORDER_SIZE, remaining)
                         order = common.submit_order(s, common.TICKER, chunk, 'BUY')
                         remaining -= chunk
-                    print(f"tick {tick}: bought {shares} shares")
+                    print(f"tick {tick} (scheduled {scheduled_tick}): bought {shares} shares")
 
                 # Check actual holdings against the cumulative target schedule
-                if tick in cumulative_holdings_schedule:
-                    target = cumulative_holdings_schedule.pop(tick)
+                for scheduled_tick in sorted(t for t in cumulative_holdings_schedule if t <= tick):
+                    target = cumulative_holdings_schedule.pop(scheduled_tick)
                     actual = common.get_position(s, common.TICKER)
                     diff = target - actual
 
@@ -88,10 +88,10 @@ def main():
                     # Record VWAP and slippage at each checkpoint
                     running_own_vwap = common.get_own_vwap(s, common.TICKER)
                     running_market_vwap = common.get_market_vwap(s, common.TICKER, market_vwap_state)
-                    common.log_vwap_point(VWAP_TIMESERIES_CSV, session_number, tick, running_own_vwap, running_market_vwap)
+                    common.log_vwap_point(VWAP_TIMESERIES_CSV, session_number, scheduled_tick, running_own_vwap, running_market_vwap)
 
                 # Update the session status and current tick before the next iteration
-                sleep(0.2)
+                sleep(0.1)
                 case = common.get_case(s)
                 tick = case['tick']
 

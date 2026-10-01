@@ -56,9 +56,9 @@ def main():
 
                     # Report whether the strategy is ahead of, behind, or on schedule
                     if diff > 0:
-                        print(f"tick {tick}: BEHIND schedule — target {target:.2f}, actual {actual:.2f} (short {diff:.2f})")
+                        print(f"tick {tick}: BEHIND schedule - target {target:.2f}, actual {actual:.2f} (short {diff:.2f})")
                     elif diff < 0:
-                        print(f"tick {tick}: AHEAD of schedule — target {target:.2f}, actual {actual:.2f} (over {-diff:.2f})")
+                        print(f"tick {tick}: AHEAD of schedule - target {target:.2f}, actual {actual:.2f} (over {-diff:.2f})")
                     else:
                         print(f"tick {tick}: on schedule — {actual:.2f} shares")
 
