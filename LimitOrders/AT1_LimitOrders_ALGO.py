@@ -63,9 +63,15 @@ def main():
             # Execute the limit-order strategy while the session is active
             while case['status'] == 'ACTIVE' and not common.shutdown:
 
-                # Start a new purchase window and replace any unfilled orders
-                if tick in purchase_schedule:
-                    scheduled_total += purchase_schedule.pop(tick)
+                # Start a new purchase window for every scheduled tick that has been
+                # reached, in case a poll ever jumps past one and would otherwise
+                # silently miss it (replace any unfilled orders once, after folding
+                # in all due windows, rather than cancelling/resubmitting per window)
+                due_ticks = sorted(t for t in purchase_schedule if t <= tick)
+                if due_ticks:
+                    for scheduled_tick in due_ticks:
+                        scheduled_total += purchase_schedule.pop(scheduled_tick)
+
                     common.cancel_orders(s, open_order_ids)
                     open_order_ids = []
 
@@ -76,7 +82,8 @@ def main():
                         open_order_ids = common.submit_limit_orders_chunked(
                             s, common.TICKER, quantity, 'BUY', price, MAX_ORDER_SIZE
                         )
-                        print(f"tick {tick}: limit BUY {quantity} @ {price:.2f} (scheduled {scheduled_total}, held {position})")
+                        print(f"tick {tick} (scheduled {due_ticks}): limit BUY {quantity} @ {price:.2f} "
+                              f"(scheduled total {scheduled_total}, held {position})")
 
                 # Complete any remaining purchase using market orders at the final sweep tick
                 if tick >= FINAL_SWEEP_TICK and not sweep_done:
@@ -95,27 +102,28 @@ def main():
                         print(f"tick {tick}: SWEEP market BUY {remaining}")
                     sweep_done = True
 
-                # Check actual holdings against the cumulative target schedule
-                if tick in cumulative_holdings_schedule:
-                    target = cumulative_holdings_schedule.pop(tick)
+                # Check actual holdings against every cumulative checkpoint that has
+                # been reached, so one is never silently skipped by a tick jump
+                for scheduled_tick in sorted(t for t in cumulative_holdings_schedule if t <= tick):
+                    target = cumulative_holdings_schedule.pop(scheduled_tick)
                     actual = common.get_position(s, common.TICKER)
                     diff = target - actual
 
                     # Report whether the strategy is ahead of, behind, or on schedule
                     if diff > 0:
-                        print(f"tick {tick}: BEHIND schedule — target {target:.2f}, actual {actual:.2f} (short {diff:.2f})")
+                        print(f"tick {tick} (scheduled {scheduled_tick}): BEHIND schedule — target {target:.2f}, actual {actual:.2f} (short {diff:.2f})")
                     elif diff < 0:
-                        print(f"tick {tick}: AHEAD of schedule — target {target:.2f}, actual {actual:.2f} (over {-diff:.2f})")
+                        print(f"tick {tick} (scheduled {scheduled_tick}): AHEAD of schedule — target {target:.2f}, actual {actual:.2f} (over {-diff:.2f})")
                     else:
-                        print(f"tick {tick}: on schedule — {actual:.2f} shares")
+                        print(f"tick {tick} (scheduled {scheduled_tick}): on schedule — {actual:.2f} shares")
 
                     # Record VWAP and slippage at each checkpoint
                     running_own_vwap = common.get_own_vwap(s, common.TICKER)
                     running_market_vwap = common.get_market_vwap(s, common.TICKER, market_vwap_state)
-                    common.log_vwap_point(VWAP_TIMESERIES_CSV, session_number, tick, running_own_vwap, running_market_vwap)
+                    common.log_vwap_point(VWAP_TIMESERIES_CSV, session_number, scheduled_tick, running_own_vwap, running_market_vwap)
 
                 # Update the session status and current tick before the next iteration
-                sleep(0.2)
+                sleep(0.1)
                 case = common.get_case(s)
                 tick = case['tick']
 
@@ -159,4 +167,4 @@ def main():
 # Start the strategy and enable graceful shutdown on interrupt
 if __name__ == "__main__":
     signal.signal(signal.SIGINT, common.signal_handler)
-    main()
+    main()  

@@ -53,6 +53,8 @@ def plot_timeseries(timeseries_csv, label, out_path):
                 label=f"Session {session}" if len(wide.columns) <= 12 else None)
     ax.plot(wide.index, wide.mean(axis=1), color="black", linewidth=2.5, label="Mean across sessions")
     ax.axhline(0, color="grey", linewidth=1, linestyle="--")
+    ax.set_ylim(-0.04, 0.08)
+    ax.set_yticks([-0.04, -0.02, 0.00, 0.02, 0.04, 0.06, 0.08])
 
     ax.set_xlabel("Tick")
     ax.set_ylabel("Slippage: own VWAP - market VWAP ($)\n(positive = paid more than market VWAP)")

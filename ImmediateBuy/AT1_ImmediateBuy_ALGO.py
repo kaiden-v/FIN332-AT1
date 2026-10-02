@@ -10,7 +10,7 @@ import signal
 
 # --- Strategy-specific config -----------------------------------------------
 TOTAL_SHARES = 100000
-MAX_ORDER_SIZE = 10000 
+MAX_ORDER_SIZE = 100000 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 RESULTS_PATH = os.path.join(SCRIPT_DIR, "Results") + os.sep
