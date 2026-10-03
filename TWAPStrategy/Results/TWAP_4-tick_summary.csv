@@ -1,2 +1,2 @@
-Strategy,Sessions,Mean Own VWAP,Mean Market VWAP,Slippage Mean,Slippage Median,Slippage Std Dev,Mean Abs Slippage,Slippage Min,Slippage Max,Sessions Above Market VWAP
+Strategy,Sessions,Mean Own VWAP,Mean Market VWAP,Shortfall Mean,Shortfall Median,Shortfall Std Dev,Mean Abs Shortfall,Shortfall Min,Shortfall Max,Sessions Above Market VWAP
 TWAP (4-tick),50,25.015,24.996,0.019,0.02,0.011,0.02,-0.01,0.04,45

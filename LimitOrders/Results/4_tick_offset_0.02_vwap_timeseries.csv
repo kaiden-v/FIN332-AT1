@@ -1,4 +1,4 @@
-Session,Tick,Own VWAP,Market VWAP,Slippage
+Session,Tick,Own VWAP,Market VWAP,Implementation Shortfall
 1,4,24.95,24.98,-0.03
 1,8,24.95,24.98,-0.03
 1,12,24.95,24.98,-0.03

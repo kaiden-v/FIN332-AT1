@@ -1,4 +1,4 @@
-Session,Final Position,Own VWAP,Market VWAP,Slippage
+Session,Final Position,Own VWAP,Market VWAP,Implementation Shortfall
 1,100000.0,24.92,24.89,0.03
 2,100000.0,24.91,24.88,0.03
 3,100000.0,24.98,24.96,0.02

@@ -1,3 +1,2 @@
-Offset,Sessions,Mean Own VWAP,Mean Market VWAP,Slippage Mean,Slippage Median,Slippage Std Dev,Mean Abs Slippage,Slippage Min,Slippage Max,Sessions Above Market VWAP,Mean Sweep Shares,Max Sweep Shares
-0.0,6,25.002,25.01,-0.008,-0.01,0.01,0.012,-0.02,0.01,1,1520.7,4610
-0.02,6,25.028,25.03,-0.002,0.0,0.004,0.002,-0.01,0.0,0,446.0,2676
+Offset,Sessions,Mean Own VWAP,Mean Market VWAP,Shortfall Mean,Shortfall Median,Shortfall Std Dev,Mean Abs Shortfall,Shortfall Min,Shortfall Max,Sessions Above Market VWAP,Mean Sweep Shares,Max Sweep Shares
+0.02,22,24.998,24.997,0.001,0.0,0.007,0.005,-0.01,0.01,6,350.5,3856

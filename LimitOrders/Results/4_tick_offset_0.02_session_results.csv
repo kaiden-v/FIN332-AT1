@@ -1,4 +1,4 @@
-Session,Final Position,Own VWAP,Market VWAP,Slippage,Offset,Sweep Shares
+Session,Final Position,Own VWAP,Market VWAP,Implementation Shortfall,Offset,Sweep Shares
 1,100000.0,24.94,24.95,-0.01,0.02,0
 2,100000.0,25.04,25.04,0.0,0.02,0
 3,100000.0,25.03,25.03,0.0,0.02,0
