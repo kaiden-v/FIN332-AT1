@@ -52,13 +52,13 @@ Implementation shortfall = own VWAP − market VWAP (Hasbrouck §16.1, using mar
     python analyse_results.py
 
 Reads every strategy's results (never modifies them) and writes:
-- per strategy, in `<Strategy>/Results/Plots/`: shortfall distribution (histogram
-  with normal fit + Q-Q plot), shortfall by session, own vs market VWAP, running
-  shortfall over the session, and sweep sizes for the limit orders
+- per strategy, in `<Strategy>/Results/Plots/`: shortfall histogram, shortfall by
+  session, own vs market VWAP, running shortfall over the session, and sweep
+  sizes for the limit orders
 - summary CSVs in each `Results/` folder
 - `Comparison/`: shortfall by strategy (box plot), mean shortfall with 95% CIs,
   cost vs risk, mean running shortfall per strategy, and `strategy_comparison.csv`
-  (mean, CI, t-test against zero, skewness, kurtosis, Shapiro-Wilk p)
+  (mean, standard deviation and 95% confidence interval per strategy)
 
 ## Notes
 

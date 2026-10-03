@@ -115,19 +115,15 @@ def summarise(s):
         "Sessions Above Market VWAP": int((x > 0).sum()),
     }
 
-# Mean with a 95% t-interval, a one-sample t-test against zero and normality checks
-def inference(s):
+# Mean shortfall with a 95% confidence interval
+def mean_ci(s):
     x = s.shortfall
     n, mean, sd = len(x), x.mean(), x.std()
     half_width = stats.t.ppf(0.975, n - 1) * sd / np.sqrt(n)
-    t_stat, t_p = stats.ttest_1samp(x, 0)
     return {
         "Strategy": s.label, "Sessions": n,
         "Mean": round(mean, 4), "Std Dev": round(sd, 4),
         "CI 95% Low": round(mean - half_width, 4), "CI 95% High": round(mean + half_width, 4),
-        "t vs 0": round(t_stat, 2), "p vs 0": round(t_p, 4),
-        "Skewness": round(stats.skew(x), 3), "Excess Kurtosis": round(stats.kurtosis(x), 3),
-        "Shapiro-Wilk p": round(stats.shapiro(x).pvalue, 4) if n >= 3 and sd > 0 else np.nan,
     }
 
 
@@ -139,38 +135,18 @@ def save(fig, path):
     plt.close(fig)
     print(f"  saved {os.path.relpath(path, ROOT)}")
 
-# Histogram (one bin per cent) with a fitted normal curve, next to a normal Q-Q plot
+# Histogram of final shortfall, one bin per cent
 def plot_distribution(s):
     x = s.shortfall
-    mean, sd = x.mean(), x.std()
-    info = inference(s)
-    fig, (ax_hist, ax_qq) = plt.subplots(1, 2, figsize=(11, 4.5), gridspec_kw={"width_ratios": [3, 2]})
-
+    fig, ax = plt.subplots(figsize=(9, 4.5))
     edges = np.arange(np.floor(x.min() * 100) - 0.5, np.ceil(x.max() * 100) + 1.5) / 100
-    ax_hist.hist(x, bins=edges, color=s.colour, edgecolor="white", linewidth=2, label="Sessions")
-    if sd > 0:
-        grid = np.linspace(edges[0], edges[-1], 300)
-        ax_hist.plot(grid, stats.norm.pdf(grid, mean, sd) * len(x) * 0.01, color=INK, linewidth=2,
-                     label=f"Normal fit (mean {mean:+.3f}, sd {sd:.3f})")
-    ax_hist.axvline(0, color=MUTED, linewidth=1, linestyle="--")
-    ax_hist.set_xlabel(IS_AXIS)
-    ax_hist.set_ylabel("Number of sessions")
-    ax_hist.set_title(f"{s.label}: distribution of final shortfall")
-    ax_hist.legend(loc="upper left")
-    ax_hist.text(0.98, 0.97,
-                 f"n = {info['Sessions']}\nskew = {info['Skewness']:+.2f}\nexcess kurtosis = {info['Excess Kurtosis']:+.2f}\n"
-                 f"Shapiro-Wilk p = {info['Shapiro-Wilk p']:.3f}\n(values rounded to $0.01)",
-                 transform=ax_hist.transAxes, ha="right", va="top", fontsize=9, color=MUTED)
-
-    (theoretical, ordered), (slope, intercept, _) = stats.probplot(x, dist="norm")
-    ax_qq.scatter(theoretical, ordered, color=s.colour, s=40, edgecolor="white", linewidth=1, zorder=3)
-    ax_qq.plot(theoretical, slope * theoretical + intercept, color=INK, linewidth=2, label="Normal reference")
-    ax_qq.set_xlabel("Theoretical normal quantile")
-    ax_qq.set_ylabel("Observed shortfall ($/share)")
-    ax_qq.set_title("Normal Q-Q plot")
-    ax_qq.legend(loc="upper left")
-
-    fig.tight_layout()
+    ax.hist(x, bins=edges, color=s.colour, edgecolor="white", linewidth=2)
+    ax.axvline(0, color=MUTED, linewidth=1, linestyle="--")
+    ax.axvline(x.mean(), color=INK, linewidth=1.5, label=f"Mean {x.mean():+.3f}")
+    ax.set_xlabel(IS_AXIS)
+    ax.set_ylabel("Number of sessions")
+    ax.set_title(f"{s.label}: distribution of final shortfall (n = {len(x)})")
+    ax.legend(loc="upper right")
     save(fig, s.plot_path("shortfall_distribution"))
 
 # Final shortfall for each session in run order, with the mean
@@ -342,7 +318,7 @@ def main():
         pd.DataFrame(rows).sort_values("Offset").to_csv(os.path.join(limits[0].results_dir, "Limit_orders_comparison.csv"), index=False)
 
     print("\nComparison across strategies")
-    table = pd.DataFrame([inference(s) for s in strategies])
+    table = pd.DataFrame([mean_ci(s) for s in strategies])
     os.makedirs(COMPARISON_DIR, exist_ok=True)
     table.to_csv(os.path.join(COMPARISON_DIR, "strategy_comparison.csv"), index=False)
     print(table.to_string(index=False))
