@@ -1,2 +1,2 @@
-Offset,Sessions,Mean Own VWAP,Mean Market VWAP,Shortfall Mean,Shortfall Median,Shortfall Std Dev,Mean Abs Shortfall,Shortfall Min,Shortfall Max,Sessions Above Market VWAP,Mean Sweep Shares,Max Sweep Shares
+Offset,Sessions,Mean Execution VWAP,Mean Market VWAP,Shortfall Mean,Shortfall Median,Shortfall Std Dev,Mean Abs Shortfall,Shortfall Min,Shortfall Max,Sessions Above Market VWAP,Mean Sweep Shares,Max Sweep Shares
 0.02,22,24.998,24.997,0.001,0.0,0.007,0.005,-0.01,0.01,6,350.5,3856

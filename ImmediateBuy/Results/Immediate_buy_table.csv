@@ -1,4 +1,4 @@
-Session,Own VWAP,Market VWAP,Implementation Shortfall
+Session,Execution VWAP,Market VWAP,Implementation Shortfall
 1,25.01,24.95,0.06
 2,25.0,24.98,0.02
 3,25.02,25.08,-0.06

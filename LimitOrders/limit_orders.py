@@ -1,4 +1,4 @@
-"""Limit orders (Q4): VWAP schedule placed as limit orders at best bid + offset.
+"""Limit orders: VWAP schedule placed as limit orders at best bid + offset.
 
 Unfilled shares roll into the next window, and whatever is left at the final
 sweep tick is bought with market orders.

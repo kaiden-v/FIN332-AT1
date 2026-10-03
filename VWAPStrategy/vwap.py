@@ -1,4 +1,4 @@
-"""VWAP strategy (Q1): market orders following the historical volume schedule."""
+"""VWAP strategy: market orders following the historical volume schedule."""
 
 import os
 import sys

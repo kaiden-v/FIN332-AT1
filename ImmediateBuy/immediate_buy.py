@@ -1,4 +1,4 @@
-"""Immediate buy (Q2): buy all shares with market orders at the start of the session."""
+"""Immediate buy: buy all shares with market orders at the start of the session."""
 
 import os
 import sys

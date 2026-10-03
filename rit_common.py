@@ -1,7 +1,7 @@
 """
 rit_common.py
 
-Shared code for the AT1 strategy scripts: RIT API helpers, schedule handling,
+Shared code for the strategy scripts: RIT API helpers, schedule handling,
 CSV logging and the session loop that every strategy runs inside.
 """
 
@@ -57,7 +57,7 @@ def get_position(api):
     return _get_security(api)['position']
 
 # Our own average execution price
-def get_own_vwap(api):
+def get_execution_vwap(api):
     return _get_security(api)['vwap']
 
 def get_last_price(api):
@@ -134,17 +134,17 @@ def _append_row(csv_path, header, row):
             writer.writerow(header)
         writer.writerow(row)
 
-def log_vwap_point(csv_path, session_number, tick, own_vwap, market_vwap):
-    own, market = round(own_vwap, 2), round(market_vwap, 2)
+def log_vwap_point(csv_path, session_number, tick, execution_vwap, market_vwap):
+    execution, market = round(execution_vwap, 2), round(market_vwap, 2)
     _append_row(csv_path,
-                ['Session', 'Tick', 'Own VWAP', 'Market VWAP', 'Implementation Shortfall'],
-                [session_number, tick, own, market, round(own - market, 2)])
+                ['Session', 'Tick', 'Execution VWAP', 'Market VWAP', 'Implementation Shortfall'],
+                [session_number, tick, execution, market, round(execution - market, 2)])
 
-def log_session_result(csv_path, session_number, final_position, own_vwap, market_vwap, extras):
+def log_session_result(csv_path, session_number, final_position, execution_vwap, market_vwap, extras):
     _append_row(csv_path,
-                ['Session', 'Final Position', 'Own VWAP', 'Market VWAP', 'Implementation Shortfall'] + list(extras),
-                [session_number, round(final_position, 2), own_vwap, market_vwap,
-                 round(own_vwap - market_vwap, 2)] + list(extras.values()))
+                ['Session', 'Final Position', 'Execution VWAP', 'Market VWAP', 'Implementation Shortfall'] + list(extras),
+                [session_number, round(final_position, 2), execution_vwap, market_vwap,
+                 round(execution_vwap - market_vwap, 2)] + list(extras.values()))
 
 
 # --- Session loop --------------------------------------------------------------
@@ -177,25 +177,25 @@ class SessionRun:
             status = f"on schedule - {actual:.0f} shares"
         print(f"tick {tick} (scheduled {scheduled_tick}): {status}")
         log_vwap_point(self.timeseries_csv, self.number, scheduled_tick,
-                       get_own_vwap(self.api), self.market_vwap.update(self.api))
+                       get_execution_vwap(self.api), self.market_vwap.update(self.api))
 
     # Print and log the final position, VWAPs and implementation shortfall
     def finish(self, session_csv, extras):
         final_position = get_position(self.api)
-        own_vwap = round(get_own_vwap(self.api), 2)
+        execution_vwap = round(get_execution_vwap(self.api), 2)
         market_vwap = round(self.market_vwap.update(self.api), 2)
 
         print("--- FINAL RESULTS ---")
         print(f"Final position:  {final_position:.0f} (target {TOTAL_SHARES})")
         for name, value in extras.items():
             print(f"{name + ':':<16} {value}")
-        print(f"Own VWAP:        {own_vwap:.2f}")
+        print(f"Execution VWAP:  {execution_vwap:.2f}")
         print(f"Market VWAP:     {market_vwap:.2f}")
-        print(f"Impl. shortfall: {own_vwap - market_vwap:+.2f}")
+        print(f"Impl. shortfall: {execution_vwap - market_vwap:+.2f}")
 
         if self.timeseries_csv:
-            log_vwap_point(self.timeseries_csv, self.number, CASE_LENGTH_TICKS, own_vwap, market_vwap)
-        log_session_result(session_csv, self.number, final_position, own_vwap, market_vwap, extras)
+            log_vwap_point(self.timeseries_csv, self.number, CASE_LENGTH_TICKS, execution_vwap, market_vwap)
+        log_session_result(session_csv, self.number, final_position, execution_vwap, market_vwap, extras)
 
 
 # Run trade(api, case, run) for every session until Ctrl+C. trade returns the extra

@@ -1,4 +1,4 @@
-Session,Final Position,Own VWAP,Market VWAP,Implementation Shortfall,Interval Ticks
+Session,Final Position,Execution VWAP,Market VWAP,Implementation Shortfall,Interval Ticks
 1,100000.0,25.08,25.05,0.03,4
 2,100000.0,25.06,25.03,0.03,4
 3,100000.0,25.02,25.0,0.02,4

@@ -1,7 +1,7 @@
 """
 analyse_results.py
 
-Summary tables and report plots for every strategy, plus cross-strategy comparisons.
+Summary tables and plots for every strategy, plus cross-strategy comparisons.
 Reads the CSVs in each <Strategy>/Results folder and never modifies them.
 
     python analyse_results.py
@@ -21,7 +21,7 @@ from scipy import stats
 ROOT = os.path.dirname(os.path.abspath(__file__))
 COMPARISON_DIR = os.path.join(ROOT, "Comparison")
 IS = "Implementation Shortfall"
-IS_AXIS = "Implementation shortfall ($/share)\nown VWAP - market VWAP"
+IS_AXIS = "Implementation shortfall ($/share)\nexecution VWAP - market VWAP"
 
 # Fixed colour per strategy so it is the same in every plot
 COLOURS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#4a3aa7"]
@@ -88,8 +88,8 @@ def find_strategies():
 # Per-tick shortfall, one column per session, ready to plot
 def load_timeseries(s):
     df = pd.read_csv(s.out(s.timeseries_csv)).drop_duplicates(subset=["Session", "Tick"], keep="last")
-    # Before the first fill RIT reports an own VWAP of 0, which is not a real shortfall
-    df = df[df["Own VWAP"] > 0]
+    # Before the first fill RIT reports an execution VWAP of 0, which is not a real shortfall
+    df = df[df["Execution VWAP"] > 0]
     # Sessions stopped before the end would bend the mean line
     last_tick = df.groupby("Session")["Tick"].max()
     complete = last_tick[last_tick == last_tick.max()].index
@@ -104,7 +104,7 @@ def summarise(s):
     x = s.shortfall
     return {
         "Sessions": len(x),
-        "Mean Own VWAP": round(s.df["Own VWAP"].mean(), 3),
+        "Mean Execution VWAP": round(s.df["Execution VWAP"].mean(), 3),
         "Mean Market VWAP": round(s.df["Market VWAP"].mean(), 3),
         "Shortfall Mean": round(x.mean(), 3),
         "Shortfall Median": round(x.median(), 3),
@@ -161,20 +161,20 @@ def plot_by_session(s):
     ax.legend(loc="upper right")
     save(fig, s.plot_path("shortfall_by_session"))
 
-# Own VWAP against market VWAP: points above the 45-degree line paid more than the market
+# Execution VWAP against market VWAP: points above the 45-degree line paid more than the market
 def plot_vwap_scatter(s):
     fig, ax = plt.subplots(figsize=(6, 6))
-    lo = min(s.df["Own VWAP"].min(), s.df["Market VWAP"].min()) - 0.02
-    hi = max(s.df["Own VWAP"].max(), s.df["Market VWAP"].max()) + 0.02
-    ax.plot([lo, hi], [lo, hi], color=MUTED, linewidth=1.5, linestyle="--", label="Own VWAP = market VWAP")
-    ax.scatter(s.df["Market VWAP"], s.df["Own VWAP"], color=s.colour, s=50, edgecolor="white", linewidth=1,
+    lo = min(s.df["Execution VWAP"].min(), s.df["Market VWAP"].min()) - 0.02
+    hi = max(s.df["Execution VWAP"].max(), s.df["Market VWAP"].max()) + 0.02
+    ax.plot([lo, hi], [lo, hi], color=MUTED, linewidth=1.5, linestyle="--", label="Execution VWAP = market VWAP")
+    ax.scatter(s.df["Market VWAP"], s.df["Execution VWAP"], color=s.colour, s=50, edgecolor="white", linewidth=1,
                zorder=3, label="Sessions")
     ax.set_xlim(lo, hi)
     ax.set_ylim(lo, hi)
     ax.set_aspect("equal")
     ax.set_xlabel("Market VWAP ($)")
-    ax.set_ylabel("Own VWAP ($)")
-    ax.set_title(f"{s.label}: own vs market VWAP")
+    ax.set_ylabel("Execution VWAP ($)")
+    ax.set_title(f"{s.label}: execution vs market VWAP")
     ax.legend(loc="upper left")
     save(fig, s.plot_path("vwap_scatter"))
 
@@ -249,7 +249,7 @@ def plot_mean_ci(strategies, table):
     ax.set_title("Mean shortfall by strategy")
     save(fig, os.path.join(COMPARISON_DIR, "mean_shortfall_ci.png"))
 
-# Expected cost against risk (sd of cost), as in the efficient trading frontier (Hasbrouck 17.2)
+# Expected cost against risk (sd of cost)
 def plot_cost_vs_risk(strategies):
     fig, ax = plt.subplots(figsize=(8, 5.5))
     for s in strategies:
@@ -301,7 +301,7 @@ def main():
     # Immediate buy: per-session table with Mean and Std Dev rows for the write-up
     immediate = next((s for s in strategies if s.prefix == "Immediate_buy"), None)
     if immediate:
-        cols = ["Session", "Own VWAP", "Market VWAP", IS]
+        cols = ["Session", "Execution VWAP", "Market VWAP", IS]
         table = immediate.df[cols].astype({"Session": str})
         stat_rows = pd.DataFrame([{"Session": name, **getattr(immediate.df[cols[1:]], fn)()} for name, fn in
                                   [("Mean", "mean"), ("Std Dev", "std")]])

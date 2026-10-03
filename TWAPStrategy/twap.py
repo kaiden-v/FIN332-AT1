@@ -1,4 +1,4 @@
-"""TWAP strategy (Q5): equal-sized market orders at even intervals."""
+"""TWAP strategy: equal-sized market orders at even intervals."""
 
 import os
 import sys
