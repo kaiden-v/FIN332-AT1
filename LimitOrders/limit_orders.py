@@ -13,7 +13,7 @@ import rit_common as common
 # --- Config ---------------------------------------------------------------------
 SCHEDULE_NAME = "4_tick"
 MAX_ORDER_SIZE = 10000
-OFFSET = 0.02            # added to the best bid: 0.00 is fully passive, larger is more aggressive
+OFFSET = 0.00            # added to the best bid: 0.00 is fully passive, larger is more aggressive
 FINAL_SWEEP_TICK = 299   # buy any remaining shares with market orders from this tick
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
