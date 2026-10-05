@@ -178,8 +178,9 @@ def plot_vwap_scatter(s):
     ax.legend(loc="upper left")
     save(fig, s.plot_path("vwap_scatter"))
 
-# Shortfall through the session: each session faintly, the mean and a +/-1 sd band on top
-def plot_timeseries(s, wide):
+# Shortfall through the session: each session faintly, the mean and a +/-1 sd band on top.
+# All strategies share the same y-axis (ylim) so the plots can be compared side by side.
+def plot_timeseries(s, wide, ylim):
     mean, sd = wide.mean(axis=1), wide.std(axis=1)
     fig, ax = plt.subplots(figsize=(11, 5.5))
     ax.plot(wide.index, wide.values, color="#b9b8b2", linewidth=0.8, alpha=0.6)
@@ -188,6 +189,8 @@ def plot_timeseries(s, wide):
     ax.plot(wide.index, mean, color=s.colour, linewidth=2.5, label="Mean across sessions")
     ax.axhline(0, color=INK, linewidth=1)
     ax.set_xlim(wide.index.min(), wide.index.max())
+    ax.set_ylim(ylim)
+    ax.set_yticks(np.arange(ylim[0], ylim[1] + 0.005, 0.01))
     ax.set_xlabel("Tick")
     ax.set_ylabel(IS_AXIS)
     ax.set_title(f"{s.label}: running shortfall over the session")
@@ -293,9 +296,14 @@ def main():
             plot_sweep_shares(s)
         else:
             pd.DataFrame([{"Strategy": s.label, **summarise(s)}]).to_csv(s.out(f"{s.prefix}_summary.csv"), index=False)
-        if s.timeseries_csv:
-            wide = load_timeseries(s)
-            plot_timeseries(s, wide)
+
+    # Running shortfall: load every strategy first so they can share one y-axis, rounded out to whole cents
+    wides = [(s, load_timeseries(s)) for s in strategies if s.timeseries_csv]
+    if wides:
+        ylim = (np.floor(min(w.min().min() for _, w in wides) * 100) / 100,
+                np.ceil(max(w.max().max() for _, w in wides) * 100) / 100)
+        for s, wide in wides:
+            plot_timeseries(s, wide, ylim)
             mean_series.append((s, wide.mean(axis=1)))
 
     # Immediate buy: per-session table with Mean and Std Dev rows for the write-up
